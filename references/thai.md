@@ -133,3 +133,16 @@ falling drop for worried/shocked.
 The trap that only shows on a rendered frame: a worried brow must have its
 **inner end raised**. Inner end lowered is an angry brow, and the two are one
 sign flip apart in code.
+
+### The synth is already loud
+
+`audio.py` outputs sit around −13 LUFS with true peak near −1 dBTP and an LRA
+of ~1.3. There is almost no headroom, so a *linear* second-pass `loudnorm`
+cannot bring true peak down to −2 — it reports success and leaves the peak
+where it was. Measured on a real render: −14.16 LUFS / −0.34 dBTP after the
+"correct" two-pass.
+
+What works: limit first, then let `loudnorm` run in dynamic mode so it enforces
+the ceiling — `alimiter=limit=0.5,loudnorm=I=-14:TP=-2:LRA=9`. Always read the
+numbers back from the final MP4; the filter's own log describes what it
+intended, not what it delivered.

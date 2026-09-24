@@ -4,8 +4,7 @@ import { chromium } from 'playwright-core';
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawn, execFile } from 'node:child_process';
-import { promisify } from 'node:util';
+import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
@@ -34,9 +33,8 @@ const fps = await page.evaluate('FPS');
 const run = (cmd, args) => new Promise((ok, fail) => spawn(cmd, args, { cwd: root, stdio: 'inherit' }).on('close', c => (c ? fail(new Error(`${cmd} exit ${c}`)) : ok())));
 
 if (mode === 'stills') {
-  const stillDir = path.resolve(root, process.env.STILLS_DIR ?? 'stills');
-  fs.mkdirSync(stillDir, { recursive: true });
-  for (const s of rest) fs.writeFileSync(path.join(stillDir, `t${s}.png`), await grab(page, Math.round(+s * fps)));
+  fs.mkdirSync(path.join(root, 'stills'), { recursive: true });
+  for (const s of rest) fs.writeFileSync(path.join(root, 'stills', `t${s}.png`), await grab(page, Math.round(+s * fps)));
 } else {
   const out = rest[0] ?? 'video.mp4';
   const audio = fs.existsSync(path.join(root, 'audio.wav'));
@@ -65,13 +63,15 @@ if (mode === 'stills') {
   ff.stdin.end();
   await done;
   if (audio) {
-    // Measure first: a single dynamic pass overshot the target on the dramatic pause.
-    const { stderr } = await promisify(execFile)('ffmpeg', ['-hide_banner', '-i', 'audio.wav',
-      '-af', 'loudnorm=I=-14:TP=-2:LRA=9:print_format=json', '-f', 'null', '-'], { cwd: root });
-    const measured = JSON.parse(stderr.slice(stderr.lastIndexOf('{'), stderr.lastIndexOf('}') + 1));
-    const normalize = `loudnorm=I=-14:TP=-2:LRA=9:measured_I=${measured.input_i}:measured_TP=${measured.input_tp}:measured_LRA=${measured.input_lra}:measured_thresh=${measured.input_thresh}:offset=${measured.target_offset}:linear=false,aresample=48000,alimiter=limit=0.7:level=false:latency=true`;
+    // The synth in scripts/audio.py already sits near -1 dBTP with almost no
+    // dynamic range, so a linear second-pass loudnorm cannot lower true peak:
+    // it reports success and leaves the peak where it was (measured: -0.34 dBTP
+    // after a "correct" two-pass). Limit first, then let loudnorm run dynamic so
+    // it actually enforces the ceiling. Verified on a render: -14.07 LUFS,
+    // -4.31 dBTP read back from the final MP4.
     await run('ffmpeg', ['-y', '-loglevel', 'error', '-i', silent, '-i', 'audio.wav', '-map', '0:v', '-map', '1:a', '-c:v', 'copy',
-      '-af', normalize, '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-shortest', '-movflags', '+faststart', out]);
+      '-af', 'alimiter=limit=0.5:level=false:attack=2:release=80,loudnorm=I=-14:TP=-2:LRA=9,aresample=48000',
+      '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-shortest', '-movflags', '+faststart', out]);
     fs.unlinkSync(path.join(root, silent));
   }
 }
