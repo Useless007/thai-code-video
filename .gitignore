@@ -1,0 +1,8 @@
+node_modules/
+stills/
+*.mp4
+*.wav
+__pycache__/
+*.pyc
+.DS_Store
+assets/fonts/
