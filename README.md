@@ -1,49 +1,49 @@
 # thai-code-video
 
-สกิลสำหรับ AI agent (Claude Code, Codex) ที่ทำให้มัน**ทำคลิปโปรโมทสั้น ๆ เป็น MP4 ได้ด้วยโค้ดล้วน** — ไม่มีฟุตเทจ ไม่มี After Effects วาดทุกเฟรมด้วย canvas เรนเดอร์ผ่าน Chrome แล้ว ffmpeg ต่อเป็นวิดีโอ พร้อมดนตรีที่สังเคราะห์ด้วยโค้ดเช่นกัน
+An agent skill (Claude Code, Codex) that renders a short promo video as an MP4 **drawn entirely in code** — no footage, no After Effects. Every frame is canvas, rendered through headless Chrome, muxed by ffmpeg, with music synthesized in code too.
 
-Fork มาจาก [Changroro/code-video](https://github.com/Changroro/code-video) (MIT) แล้ว**จูนมาเพื่อภาษาไทยโดยเฉพาะ**
+A fork of [Changroro/code-video](https://github.com/Changroro/code-video) (MIT), **retuned for Thai**.
 
-ตัวอย่างที่ทำจริง: คลิปเล่าปัญหาของโรงงานน้ำแข็งก่อนมีระบบ 41 วินาที ตัวละครพิกเซล 8-bit มีสีหน้า มีเสียง
+The skill itself is written in English so an agent loads it cheaply (measured: the English `SKILL.md` is ~2.8k tokens; the same file in Thai was ~8k). The videos it makes are in Thai.
 
 ---
 
-## ทำไมต้อง fork — ของเดิมใช้กับไทยไม่ได้เลย
+## Why fork — the original could not do Thai at all
 
-ไม่ใช่เรื่องฟอนต์ เครื่องยนต์เดิมมีบรรทัดนี้:
+Not a font problem. The engine had this line:
 
 ```js
 const words = s.split(' ')
 ```
 
-**ภาษาไทยไม่เว้นวรรคระหว่างคำ** ประโยคทั้งประโยคเลยกลายเป็น "คำเดียว" เอฟเฟกต์ตัวอักษรเด้งทีละคำ — ซึ่งเป็นลายเซ็นของเครื่องยนต์นี้ — จึงพังสนิท
+**Thai puts no spaces between words.** A whole sentence came back as one "word", and kinetic type — the effect this engine is built around — simply did not work.
 
-| เดิม | fork นี้ |
+| Original | This fork |
 |---|---|
-| `split(' ')` → ประโยคไทยได้ 1 ชิ้น | `Intl.Segmenter('th')` → ตัดคำได้จริง ใช้ ICU ที่มีใน Chrome อยู่แล้ว ไม่ต้องขนพจนานุกรม |
-| พิมพ์ดีดแยกตาม code point → `"น้ำ"` = 3 ตัว สระลอยหนึ่งเฟรม | แยกตามพยางค์ (grapheme) → `"น้ำ"` = 1 |
-| ระยะห่างตามผลตัดคำ → `โรงงาน น้ำ แข็ง` อ่านเหมือนสะกดผิด | ช่องว่างตามที่ผู้เขียนเว้นเท่านั้น |
-| ฟอนต์เกาหลี (Pretendard, Galmuri) | Kanit · IBM Plex Sans Thai · Charmonman · Noto Thai ทั้งหมด OFL |
-| loudnorm รอบเดียว พลาดเป้าถ้ามีช่วงเงียบ | วัดก่อนแล้วปรับ ได้ −14 LUFS จากไฟล์จริง |
-| ตัวละครหน้าเดียวทั้งเรื่อง | `face()` — กังวล · ตกใจ · เหนื่อย · โล่งใจ |
+| `split(' ')` → a Thai sentence is 1 piece | `Intl.Segmenter('th')` → real word boundaries, using the ICU already inside Chrome; no dictionary shipped |
+| Typewriter splits by code point → `"น้ำ"` is 3, a vowel mark floats for a frame | Splits by grapheme → `"น้ำ"` is 1 |
+| Layout spacing follows segmentation → `โรงงาน น้ำ แข็ง` reads as a spelling mistake | Spaces appear only where the writer typed one |
+| Korean fonts (Pretendard, Galmuri) | Kanit · IBM Plex Sans Thai · Charmonman · Noto Thai — all OFL |
+| Single-pass `loudnorm`, overshoots on quiet stretches | Measure first, then normalize; −14 LUFS verified from the final file |
+| One face per character for the whole story | `face()` — worried · shocked · tired · relieved |
 
-รายละเอียดทุกข้อและเหตุผลอยู่ใน [`references/thai.md`](references/thai.md)
+Every change and the reasoning behind it is in [`references/thai.md`](references/thai.md).
 
 ---
 
-## ติดตั้ง
+## Install
 
-ต้องมี: `node` · `ffmpeg` (ที่มี libx264) · Google Chrome · `uv`
+Requires `node`, `ffmpeg` (with libx264), Google Chrome, and `uv`.
 
 ```bash
 # Claude Code
 git clone https://github.com/Useless007/thai-code-video ~/.agents/skills/thai-code-video
 ln -s ~/.agents/skills/thai-code-video ~/.claude/skills/thai-code-video
 
-# Codex ใช้ ~/.agents/skills อยู่แล้ว ไม่ต้อง symlink
+# Codex already reads ~/.agents/skills — no symlink needed
 ```
 
-โหลดฟอนต์ไทยครั้งเดียว (ไม่ได้อยู่ใน repo เพราะเป็นไบนารี):
+Fetch the Thai fonts once (binaries are not in the repo):
 
 ```bash
 cd ~/.agents/skills/thai-code-video
@@ -52,44 +52,44 @@ bash scripts/fetch_fonts.sh assets/fonts
 
 ---
 
-## ใช้ยังไง
+## Use
 
-บอก agent ว่า *"ทำคลิปโปรโมท…"* หรือเรียกสกิลตรง ๆ มันจะถามลุคกับรูปแบบเรื่อง แล้วเสนอ storyboard ให้ดูก่อนเรนเดอร์
+Tell the agent *"make a promo video…"* or invoke the skill. It asks for a look and a story format, then shows a storyboard before rendering.
 
-ถ้าจะทำมือ:
+By hand:
 
 ```bash
-cp -r template/ งานของฉัน/ && cd งานของฉัน
-cp -r ../assets .            # ฟอนต์
+cp -r template/ my-video/ && cd my-video
+cp -r ../assets .            # fonts
 npm install
-# แก้ main.js เขียนฉาก · แก้ audio.json วางเสียง
-node render.mjs stills 3 9 15         # ดูภาพนิ่งก่อน ห้ามข้าม
+# edit main.js (scenes) and audio.json (cues)
+node render.mjs stills 3 9 15         # look at stills first — never skip this
 uv run --with numpy --with scipy python ../scripts/audio.py audio.json audio.wav
-node render.mjs video                 # ได้ video.mp4
+node render.mjs video                 # → video.mp4
 ```
 
-**ตรวจภาพนิ่งทุกฉากก่อนเรนเดอร์เต็มเสมอ** บั๊กภาษาไทย (คำติดกันผิด สระลอย คิ้วผิดอารมณ์) เห็นได้จากภาพเท่านั้น อ่านโค้ดไม่ออก
+**Always inspect stills of every scene before the full render.** Thai bugs — words fused wrongly, a floating vowel mark, a brow that reads angry instead of worried — are visible only on a rendered frame, never in code.
 
 ---
 
-## สิ่งที่ยังทำไม่ได้ และจะไม่แกล้งทำเป็นว่าทำได้
+## What this fork cannot do, and will not pretend to
 
-**ไม่มีฟอนต์ pixel ภาษาไทยที่รองรับวรรณยุกต์** — สระซ้อนต้องการที่แนวตั้งที่ช่อง 8×8 ไม่มีให้ ลุค arcade / terminal / thermal จึงตั้งข้อความไทยด้วย Kanit และเก็บฟอนต์ pixel ไว้ใช้กับตัวละตินและตัวเลขเท่านั้น
+**There is no OFL Thai pixel font with tone-mark coverage.** Stacked marks need vertical room an 8×8 cell does not have. The arcade / terminal / thermal looks therefore set Thai in Kanit and keep the pixel face for Latin and numerals only.
 
-ถ้าอยากได้คลิปไทยที่เป็น pixel ล้วน คำตอบที่ซื่อสัตย์คือเปลี่ยนลุค ไม่ใช่ส่งภาษาไทยที่พังออกไป
+If a Thai clip must be wholly pixel, the honest answer is a different look, not broken Thai.
 
 ---
 
-## โครงสร้าง
+## Layout
 
 ```
-SKILL.md              ← agent อ่านไฟล์นี้
-template/             ← เครื่องยนต์ (kit.js) + ลุคต่าง ๆ + render.mjs
-scripts/              ← audio.py (ดนตรี) · fetch_fonts.sh · contact_sheet.py
-references/thai.md    ← ทุกอย่างที่เกี่ยวกับภาษาไทย อ่านก่อนเขียนบท
+SKILL.md              ← the agent reads this
+template/             ← engine (kit.js), look modules, render.mjs
+scripts/              ← audio.py (music), fetch_fonts.sh, contact_sheet.py
+references/thai.md    ← everything Thai-specific; read before writing a storyboard
 references/           ← storyboard · looks · formats · kit-api · qa-checklist
 ```
 
-## สัญญาอนุญาต
+## License
 
-MIT — เหมือนต้นทาง เก็บชื่อผู้เขียนเดิมไว้ใน [LICENSE](LICENSE)
+MIT, same as upstream. The original author's copyright is kept in [LICENSE](LICENSE).

@@ -104,18 +104,32 @@ different look rather than to ship broken Thai.
 - Check the longest line in the storyboard: it scales down rather than wrapping,
   so the failure mode is "too small to read", not "overflows".
 
-## เสียง: วัดก่อน แล้วค่อยปรับ
+## Audio: measure first, then normalize
 
-ของเดิมยิง `loudnorm` รอบเดียวแบบ dynamic ซึ่งเดาค่าจากสิ่งที่ได้ยินระหว่างทาง
-แล้วพลาดเป้าเมื่อคลิปมีช่วงเงียบยาว — ในคลิปแรกของโรงงานมีช่วงหยุดตรงคำว่า
-"โดยไม่มีใครรู้" และเสียงตรงนั้นทำให้ทั้งไฟล์ดังเกินเป้า
+The original ran `loudnorm` once in dynamic mode, which guesses from what it
+hears along the way and overshoots when the clip has a long quiet stretch. The
+first factory clip paused on the line "โดยไม่มีใครรู้", and that pause pushed
+the whole file past target.
 
-ตอนนี้วัดด้วย `print_format=json` ก่อน แล้วส่งค่าที่วัดได้กลับเข้าไปรอบสอง
-(`measured_I`, `measured_TP`, `measured_LRA`, `measured_thresh`, `offset`)
-พร้อม `alimiter` กันยอดแหลม
+Now it measures with `print_format=json` first, then feeds the measured values
+back for a second linear pass (`measured_I`, `measured_TP`, `measured_LRA`,
+`measured_thresh`, `offset`) with `alimiter` on the peaks.
 
-ผลที่วัดจากไฟล์ MP4 สุดท้าย ไม่ใช่จากตอนสังเคราะห์: −14.0 LUFS, true peak −1.8 dBFS
+Result measured from the final MP4, not from the synth: −14.0 LUFS, true peak
+−1.8 dBFS.
 
-**และนี่คือบทเรียนที่ใหญ่กว่าเรื่องเสียง** — ตรวจจากไฟล์ที่เข้ารหัสแล้ว ไม่ใช่จากตอนวาด
-การดูภาพนิ่งตอนเรนเดอร์พิสูจน์แค่ว่า canvas วาดถูก ไม่ได้พิสูจน์ว่าสิ่งที่คนเปิดดูถูก
-ถ้า ffmpeg ทำสีเพี้ยนหรือเฟรมหล่น จะไม่มีทางรู้เลย · ดึงเฟรมกลับมาจาก MP4 แล้วดูอีกรอบ
+**The larger lesson is not about audio.** Check the encoded file, not the canvas.
+A still grabbed at render time proves the canvas drew correctly; it says nothing
+about what a viewer actually receives. If ffmpeg shifted colours or dropped a
+frame you would never know. Pull frames back out of the MP4 and look again.
+
+## Faces on 8-bit characters
+
+A character with one expression for the whole story keeps the viewer at arm's
+length. `face(x, y, s, mood)` draws over the eye row of a `PERSON`-style 16-row
+sprite: `worried`, `shocked`, `tired`, `relieved`. `sweat(x, y, s, t)` adds a
+falling drop for worried/shocked.
+
+The trap that only shows on a rendered frame: a worried brow must have its
+**inner end raised**. Inner end lowered is an angry brow, and the two are one
+sign flip apart in code.

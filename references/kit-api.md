@@ -80,13 +80,15 @@ boot({
 - `uv run --with numpy --with scipy python <skill>/scripts/audio.py audio.json audio.wav`: synthesized music (pad, bass, arpeggio, drums by section energy) and effects (`whoosh`, `pop`, `click`, `chime`, `ping`, `thud`, `sand`, `wave`, `type`) at cue times. The schema is in the script's docstring. With `"song"` set, a licensed track replaces the synthesized music.
 - `uv run --with librosa python <skill>/scripts/beats.py song.mp3 [offset] > beats.json`: BPM, beats, downbeats, and the drop, for cutting on the beat.
 
-## สีหน้าตัวละคร (เพิ่มใน fork ไทย)
+## Character faces (Thai fork addition)
 
-| ฟังก์ชัน | ทำอะไร |
+| Function | Does |
 |---|---|
-| `face(x, y, s, mood, {flip, bob})` | วาดสีหน้าทับสไปรต์แบบ PERSON ที่จุดเท้า x,y ขนาด s — mood: `worried` `shocked` `tired` `relieved` |
-| `sweat(x, y, s, t)` | เหงื่อหยดวนตามเวลา t ใช้คู่ worried/shocked |
+| `face(x, y, s, mood, {flip, bob})` | Draws an expression over a `PERSON`-style sprite at foot point x,y and pixel size s — mood: `worried` `shocked` `tired` `relieved` |
+| `sweat(x, y, s, t)` | A falling sweat drop cycling on t; pair with worried/shocked |
 
-เรียกหลัง `drawMini` เสมอ (วาดทับ) และส่ง `bob` เท่ากับที่ใช้เลื่อนตัวสไปรต์ ไม่งั้นหน้าลอย
+Always call after `drawMini` (it paints over), and pass the same `bob` used to
+offset the sprite or the face floats.
 
-กับดัก: คิ้วกังวลต้อง**ปลายด้านในยกขึ้น** ถ้าปลายในตกลงจะกลายเป็นหน้าโกรธ — เห็นได้จากภาพเรนเดอร์เท่านั้น อ่านโค้ดไม่ออก
+Trap: a worried brow needs its **inner end raised**; inner end lowered reads as
+angry. Visible only on a rendered frame, not in code.

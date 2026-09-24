@@ -1,103 +1,103 @@
 ---
 name: thai-code-video
-description: เรนเดอร์คลิปโปรโมทสั้นเป็นไฟล์ MP4 ที่วาดด้วยโค้ดทั้งหมด พร้อมข้อความภาษาไทยที่ตัดคำและค่อย ๆ โผล่ขึ้นมาได้ถูกต้อง เริ่มจากค้นข้อมูลหัวข้อก่อน (บริษัท บริการ เว็บไซต์ หรือสินค้า) มีสองอย่างที่เลือกแยกกันได้ - แนวภาพ (ลายเส้นวาดมือกับตัวละครจิ๋ว 8 บิต (hand-drawn + 8-bit minis), โมชันกราฟิกแบรนด์ (brand motion graphics), ภาพวาดทราย (sand art), ตู้เกม 16 บิต (arcade), จอเทอร์มินัล CRT (terminal), ใบเสร็จกระดาษความร้อน (thermal), แผนที่รถไฟฟ้า (transit) หรือพิมพ์เขียว (blueprint)) และรูปแบบเรื่อง (โปรโมทมาตรฐาน, ประชันสองฝั่ง (versus), เซสชันเทอร์มินัล, ใบเสร็จ, แผนที่เส้นทาง, ใบสเปก, มิวสิกวิดีโอเนื้อเพลง (lyric) หรือฟุตเทจตัดตามจังหวะเพลง) ถามทั้งสองอย่างก่อน แล้วถามค่าวิดีโอ (ความยาว สัดส่วนภาพ ตัวละคร ภาษาบนจอ) ขออนุมัติสตอรีบอร์ดที่สร้างจากข้อเท็จจริงที่มีแหล่งอ้างอิงและธีมแบรนด์ที่ได้จากการค้นข้อมูล จากนั้นสร้าง ตรวจ และเรนเดอร์ พร้อมเพลงที่สร้างจากโค้ด ใช้กับคำขอเช่น "ทำคลิปโปรโมท" "ทำวิดีโอเปิดตัว/อินโทร" "ทำวิดีโอแนะนำ" "ทำ explainer" "ทำวิดีโอเกี่ยวกับบริษัทนี้" หรือเมื่อเอ่ยชื่อแนวภาพหรือรูปแบบเรื่องตรง ๆ ไม่ใช้กับการตัดต่อวิดีโอถ่ายจริง การทำซับไตเติล หรือเสียงร้องเพลง
+description: Render a short promo video as an MP4 drawn entirely in code, with Thai text that segments, wraps and reveals correctly. Research the topic (a company, service, website, or product) first. Two independent choices shape it - a look (hand-drawn with 8-bit minis, brand motion graphics, sand art, 16-bit arcade, CRT terminal, thermal receipt, transit map, or blueprint) and a story format (standard promo, versus, terminal session, receipt, route map, spec sheet, lyric music video, or beat-synced footage). Asks for both first, then the video settings (length, aspect ratio, characters, on-screen language), gets a storyboard built from sourced facts and a research-based brand theme approved, then builds, checks, and renders it with code-generated music. Use for requests such as "make a promo video", "make an intro/launch video", "explainer video", "make a video about this company", or a named look or format. Not for live-action editing, subtitling, or sung vocals.
 ---
 
-# วิดีโอจากโค้ดภาษาไทย (Thai Code Video)
+# Thai Code Video
 
-ฟอร์กมาจาก [Changroro/code-video](https://github.com/Changroro/code-video) (MIT)
-แล้วปรับให้ใช้กับภาษาไทย อ่าน [references/thai.md](references/thai.md) ก่อนเขียน
-ภาษาไทยลงสตอรีบอร์ด — ในนั้นอธิบายว่าเปลี่ยนอะไรไปบ้าง อะไรที่ยังทำไม่ได้
-และกับดักเรื่องฟอนต์หนึ่งข้อที่ไม่โผล่ในภาพนิ่ง
+A fork of [Changroro/code-video](https://github.com/Changroro/code-video) (MIT), retuned for Thai.
+Read [references/thai.md](references/thai.md) before writing any Thai into a storyboard: what changed,
+what still cannot be done, and the one font trap that never shows in a still frame.
 
-สรุปสั้น ๆ: ภาษาไทยไม่เว้นวรรคระหว่างคำ ของเดิมใช้
-`split(' ')` เลยส่งทั้งประโยคให้ตัวอักษรเคลื่อนไหวเป็นคำเดียว ฟอร์กนี้
-ตัดคำด้วย `Intl.Segmenter` ซึ่งมีอยู่แล้วในตัวเรนเดอร์ ส่วนฟอนต์
-เป็นเรื่องง่าย
+Short version: Thai has no spaces between words, so the original's `split(' ')` handed kinetic type
+a whole sentence as one word. This fork segments with `Intl.Segmenter` (already in the renderer),
+reveals by grapheme so `น้ำ` never shows a floating vowel mark, and keeps segmentation out of layout.
+Fonts were the easy part. Characters get `face()`/`sweat()` for expressions — see
+[references/kit-api.md](references/kit-api.md).
 
-`<skill>` คือโฟลเดอร์ที่มี SKILL.md นี้อยู่ เอนจินอยู่ที่ `<skill>/template/`:
-- `kit.js`: เส้นวาดมือ ข้อความและตัวอักษรเคลื่อนไหว กล้อง ทรานซิชัน สไปรต์พิกเซล ตัวละครจิ๋ว การทำภาพเป็นพิกเซล คลิปวิดีโอ `useFonts`
-- โมดูลแนวภาพ `arcade.js`, `terminal.js`, `thermal.js`, `transit.js`, `blueprint.js`: ใช้ API ฉากชุดเดียวกัน บวกฉากประจำรูปแบบเรื่องของแต่ละแนวภาพ ([references/looks.md](references/looks.md))
-- `sand.js`: ตัวเรนเดอร์ทรายบนโต๊ะไฟ สำหรับแนวภาพทราย
-- `minis-ai.js`: ตัวละครจิ๋วสำเร็จรูปสำหรับหัวข้อเกี่ยวกับ AI (Claude, Codex, Gemini, DeepSeek, Grok, Qwen)
-- `render.mjs`: เรนเดอร์แบบขนานด้วย Chrome แบบ headless และรวม `audio.wav` เข้าไปถ้ามีไฟล์
-- `main.js`: โครงฉาก
+`<skill>` is the folder that contains this SKILL.md. The engine lives in `<skill>/template/`:
+- `kit.js`: hand-drawn lines, text and kinetic type, camera, transitions, pixel sprites, minis, image pixelation, video clips, `useFonts`
+- look modules `arcade.js`, `terminal.js`, `thermal.js`, `transit.js`, `blueprint.js`: one shared scene API plus each look's signature format scene ([references/looks.md](references/looks.md))
+- `sand.js`: the sand-on-a-light-table renderer for the sand look
+- `minis-ai.js`: ready-made minis for AI-related topics (Claude, Codex, Gemini, DeepSeek, Grok, Qwen)
+- `render.mjs`: parallel render with headless Chrome; muxes `audio.wav` when present
+- `main.js`: scene skeleton
 
-`<skill>/scripts/audio.py` สังเคราะห์เพลงและเสียงประกอบ ส่วน `<skill>/scripts/beats.py` หาตารางจังหวะของเพลง
+`<skill>/scripts/audio.py` synthesizes music and sound effects, and `<skill>/scripts/beats.py` finds a song's beat grid.
 
-เครื่องมือที่ต้องมี: `node`/`npm`, `ffmpeg` ที่ build พร้อม libx264, Google Chrome และ `uv` ถ้าขาดตัวไหน ให้หยุดแล้วบอกว่าขาดตัวไหน
+Required tools: `node`/`npm`, `ffmpeg` built with libx264, Google Chrome, and `uv`. If any is missing, stop and say which one.
 
 ```bash
 for c in node npm ffmpeg uv; do command -v $c >/dev/null || echo "missing: $c"; done; ffmpeg -hide_banner -encoders | grep -q libx264 || echo "missing: libx264"
 ```
 
-## 0. ถามแนวภาพกับรูปแบบเรื่องก่อน แล้วค่อยถามค่าวิดีโอ
-แนวภาพคือสไตล์การวาดอย่างเดียว ส่วนรูปแบบเรื่องคือโครงของเรื่อง แนวภาพไหนก็ใช้กับรูปแบบเรื่องไหนก็ได้ ขั้นแรกถามทั้งสองอย่างในข้อความสั้น ๆ ข้อความเดียว เป็นรายการมีเลขสองชุด (ตัวเลือกเยอะเกินกว่าคำถามเดียวจะใส่ได้) ข้ามอันที่ผู้ใช้บอกมาแล้ว และแนะนำรูปแบบเรื่องจากหัวข้อ (ถ้าเป็นการเปรียบเทียบก็แนะนำประชันสองฝั่ง ถ้าเป็นการไล่เรียงรายการก็แนะนำแผนที่เส้นทาง ประมาณนี้) เปิดคู่มือของตัวที่เลือกก่อนวางแผน
+## 0. Ask for the look and the format, then the settings
+The look is only the drawing style; the format is the story's structure. Any look works with any format. First ask for both in one short message with two numbered lists (more options than one question can hold). Skip what the user already named, and suggest a format from the topic (a comparison suggests versus, a lineup suggests route map, and so on). Open the chosen guides before planning.
 
-แนวภาพ:
+Looks:
 
-| แนวภาพ | ความรู้สึก | เสียงตั้งต้น | คู่มือ | เครดิต |
+| Look | Feel | Default sound | Guide | Credit |
 |---|---|---|---|---|
-| 1. ลายเส้นวาดมือ + ตัวละครจิ๋ว 8 บิต (hand-drawn + 8-bit minis) (ค่าตั้งต้น) | สนุก ๆ แบบสมุดสเก็ตช์ | ไม่มี | [references/storyboard.md](references/storyboard.md) | [@nahiddotai](https://www.threads.com/@nahiddotai/post/DdmtD3zDtkB) |
-| 2. โมชันกราฟิกแบรนด์ (brand motion graphics) | เรียบร้อย ดูเป็นทางการ | ไม่มี | [references/styles/motion.md](references/styles/motion.md) | [@digitalstrategyai](https://www.threads.com/@digitalstrategyai/post/DdpAYbcgAj0) |
-| 3. ภาพวาดทราย (sand art) | อบอุ่น เหมือนเล่านิทาน | เพลงและเสียงประกอบ | [references/styles/sand.md](references/styles/sand.md) | [@Michaelzsguo](https://x.com/Michaelzsguo/status/2102592355165782312) |
-| 4. ตู้เกม 16 บิต (arcade) | เกม ๆ มีพลัง | เพลงสไตล์ชิปทูนและเสียงกระแทก | [references/looks.md](references/looks.md) | ต้นฉบับ |
-| 5. จอเทอร์มินัล CRT (terminal) | สายนักพัฒนา ย้อนยุค | เสียงคีย์บอร์ด แพดเบา ๆ | [references/looks.md](references/looks.md) | ต้นฉบับ |
-| 6. ใบเสร็จกระดาษความร้อน (thermal) | งานพิมพ์ จับต้องได้ | เสียงเครื่องพิมพ์ติ๊ก ๆ เสียงปั๊มตรา | [references/looks.md](references/looks.md) | ต้นฉบับ |
-| 7. แผนที่รถไฟฟ้า (transit) | แผนภาพ เป็นระเบียบ | เสียงกริ่ง เสียงรถไฟ | [references/looks.md](references/looks.md) | ต้นฉบับ |
-| 8. พิมพ์เขียว (blueprint) | งานเทคนิค แม่นยำ | เสียงเขียนแบบ | [references/looks.md](references/looks.md) | ต้นฉบับ |
+| 1. Hand-drawn + 8-bit minis (default) | playful, sketchbook | none | [references/storyboard.md](references/storyboard.md) | [@nahiddotai](https://www.threads.com/@nahiddotai/post/DdmtD3zDtkB) |
+| 2. Brand motion graphics | clean, official | none | [references/styles/motion.md](references/styles/motion.md) | [@digitalstrategyai](https://www.threads.com/@digitalstrategyai/post/DdpAYbcgAj0) |
+| 3. Sand art | warm, story-like | music and effects | [references/styles/sand.md](references/styles/sand.md) | [@Michaelzsguo](https://x.com/Michaelzsguo/status/2102592355165782312) |
+| 4. 16-bit arcade | game, energetic | chiptune-style music and hits | [references/looks.md](references/looks.md) | original |
+| 5. CRT terminal | developer, retro | key clicks, soft pad | [references/looks.md](references/looks.md) | original |
+| 6. Thermal receipt | printed, tactile | printer ticks, stamp | [references/looks.md](references/looks.md) | original |
+| 7. Transit map | diagram, orderly | chimes, trains | [references/looks.md](references/looks.md) | original |
+| 8. Blueprint | technical, precise | drafting sounds | [references/looks.md](references/looks.md) | original |
 
-รูปแบบเรื่อง (รายละเอียดใน [references/formats.md](references/formats.md)):
+Formats (details in [references/formats.md](references/formats.md)):
 
-| รูปแบบเรื่อง | โครงเรื่อง | เครดิต |
+| Format | Structure | Credit |
 |---|---|---|
-| 1. โปรโมทมาตรฐาน (ค่าตั้งต้น) | ฮุก → ชื่อเรื่อง → ขั้นตอน → ตัวเลขใหญ่ → ปิดท้าย | ต้นฉบับ |
-| 2. ประชันสองฝั่ง (versus) | แข่งกันเป็นยก ๆ ระหว่างสองตัวเลือก แล้วสรุปคะแนน | ต้นฉบับ |
-| 3. เซสชัน | คำสั่งและผลลัพธ์ที่โชว์ว่าใช้งานยังไง | ต้นฉบับ |
-| 4. ใบเสร็จ | รายการแจกแจง ยอดรวม ปั๊มตรา | ต้นฉบับ |
-| 5. แผนที่เส้นทาง | สาย สถานี จุดเปลี่ยนสาย | ต้นฉบับ |
-| 6. ใบสเปก | ชิ้นส่วนต่าง ๆ ชิ้นละหนึ่งสเปก | ต้นฉบับ |
-| 7. มิวสิกวิดีโอเนื้อเพลง (lyric) | เพลงที่แต่งขึ้นเอง หนึ่งบรรทัดหนึ่งข้อเท็จจริง | [@goodside](https://x.com/goodside/status/2102852546620744010) |
-| 8. ฟุตเทจตัดตามจังหวะ | ตัดคลิปจริงตามจังหวะเพลง | [@twoclipping](https://x.com/twoclipping/status/2102554209166000267) |
+| 1. Standard promo (default) | hook → title → steps → big number → ending | original |
+| 2. Versus | rounds between two options, then a tally | original |
+| 3. Session | commands and outputs that show how it is used | original |
+| 4. Receipt | itemised list, total, stamp | original |
+| 5. Route map | lines, stations, interchanges | original |
+| 6. Spec sheet | parts, each with one spec | original |
+| 7. Lyric music video | an original song, one fact per line | [@goodside](https://x.com/goodside/status/2102852546620744010) |
+| 8. Beat-synced footage | cuts on a song's beats over real clips | [@twoclipping](https://x.com/twoclipping/status/2102554209166000267) |
 
-ตอนลิสต์แนวภาพและรูปแบบเรื่อง ให้บอกแหล่งต้นฉบับพร้อมลิงก์ของตัวที่มีเครดิตทุกตัว
+When you list looks and formats, name each credited one's original source with its link.
 
-จากนั้นถามค่าวิดีโอในการเรียก AskUserQuestion ครั้งเดียว ข้ามอันที่ผู้ใช้บอกมาแล้ว และวางตัวเลือกที่แนะนำไว้เป็นอันแรก
+Then ask the settings in one AskUserQuestion call. Skip anything the user already said, and put the recommended option first.
 
-- ความยาว: 30 วิ / 15 วิ / 45 วิ / 60 วิ
-- เฟรม: 16:9 1920×1080 / 9:16 1080×1920 / 1:1 1080×1080 / 16:9 2560×1440
-- ตัวละคร: มาสคอตจากโลโก้ + ตัวละครจิ๋วตามหัวข้อ / ตัวละครจิ๋วที่ผู้ใช้กำหนด / มาสคอตจากโลโก้อย่างเดียว / ไม่มี
-- ภาษาบนจอ: ภาษาที่ใช้คุยในบทสนทนานี้ / อังกฤษ / ทั้งสองภาษา
+- Length: 30 s / 15 s / 45 s / 60 s
+- Frame: 16:9 1920×1080 / 9:16 1080×1920 / 1:1 1080×1080 / 16:9 2560×1440
+- Characters: logo mascot + topic minis / user-specified minis / logo mascot only / none
+- On-screen language: the language of this conversation / English / both
 
-ตัวละครจะเป็นไปตามแนวภาพ: สไปรต์ 8 บิต เงาทราย ฮีโร่พิกเซล หรือไอคอนแบน ตัวละครจิ๋วคือตัวประกอบที่เข้ากับหัวข้อ ถ้าผู้ใช้ระบุตัวละครมาก็ใช้ตามนั้น ถ้าไม่ได้ระบุ ให้เลือกชุดตัวละครจากผลการค้นข้อมูลแล้วเสนอไว้ในแผน (ดูหัวข้อ "Minis" ใน [references/storyboard.md](references/storyboard.md))
+Characters take the look's form: 8-bit sprites, sand silhouettes, pixel heroes, or flat icons. Minis are a supporting cast that fits the topic. Use the user's cast if they name one. Otherwise pick a cast from the research and propose it in the plan (see "Minis" in [references/storyboard.md](references/storyboard.md)).
 
-อะไรที่ไม่ได้ถาม ให้ใช้ค่าตั้งต้นตามนี้ และเขียนบอกไว้ในแผน:
-- 30 fps, H.264 MP4 ไม่เกิน 10 MB ต่อ 30 วิ (มีเสียงเกินได้นิดหน่อย)
-- เสียงตามที่ระบุไว้ในแนวภาพ รูปแบบเนื้อเพลงกับตัดตามจังหวะมีเพลงเสมอ ไม่มีเสียงร้อง
+Use these defaults for anything you did not ask, and state them in the plan:
+- 30 fps, H.264 MP4, at most 10 MB per 30 s (a little more when there is sound)
+- Sound as listed for the look; the lyric and beat formats always have music. There are no sung vocals.
 
-## กติกาที่ใช้กับทุกแนวภาพและทุกรูปแบบเรื่อง
-- **ภาษา**: ข้อความทุกชิ้นบนจอต้องเป็นไปตามค่าภาษาบนจอ รวมถึงป้ายกำกับ HUD เนื้อเพลง ใบเสร็จ เอาต์พุตเทอร์มินัล และการ์ดปิดท้าย
-- **ธีมจากการค้นข้อมูล**: ชุดสีต้องมาจากสีจริงของแบรนด์ (หน้า CI, CSS ของเว็บ หรือพิกเซลของโลโก้) และฟอนต์ใช้ของแบรนด์ถ้าทำได้ แสดงชุดสีเป็นค่า hex พร้อมที่มาไว้ในแผน แนวภาพที่มีวัสดุตายตัว (ทราย, เขียวเทอร์มินัล, กระดาษความร้อน, น้ำเงินพิมพ์เขียว) ให้คงวัสดุนั้นไว้ แล้วใส่ความเป็นแบรนด์ผ่านโลโก้ สีเน้นหนึ่งสี (`LOOK.colors`) และการ์ดปิดท้าย
-- **ตัวเลข**: ตัวเลขทุกตัวต้องมีแหล่งที่มา อายุและ "N ปี" ให้คำนวณจากวันก่อตั้ง อย่าลอกประโยค "N ปี" เก่า ๆ จากเว็บมา ห้ามแต่งค่าบนหน้าจอ UI หรือสถิติตัวอย่างขึ้นเอง ใช้ค่าจริงหรือไม่ต้องใส่
-- **เครดิต**: แนวภาพและรูปแบบเรื่องที่มีเครดิต ต้องบอกชื่อคนที่เป็นเจ้าของไอเดียที่เอามาดัดแปลง ถ้าแก้คู่มือก็ต้องเก็บเครดิตพวกนั้นไว้
+## Rules for every look and format
+- **Language**: every piece of on-screen text follows the on-screen language setting, including labels, HUD, lyrics, receipts, terminal output, and the end card.
+- **Theme from research**: the palette comes from the brand's real colours (CI page, site CSS, or logo pixels) and the fonts from the brand where possible. Show the palette as hex values with their source in the plan. Looks with a fixed material (sand, terminal green, thermal paper, blueprint blue) keep it and carry the brand in the logo, one accent (`LOOK.colors`), and the end card.
+- **Numbers**: every number has a source. Compute ages and "N years" from the founding date instead of copying an old "N years" line from the site. Do not invent UI readouts or example stats; use real values or leave them out.
+- **Credit**: credited looks and formats name the creator whose idea they adapt. Keep those credits when you change a guide.
 
-## 1. ค้นข้อมูล
-ทำตาม [references/research.md](references/research.md)
-- ส่งงานหาข้อเท็จจริง ตัวเลข ข้อความต้นฉบับคำต่อคำ และไฟล์แบรนด์ ให้เอเจนต์แบบอ่านอย่างเดียว และรันการค้นที่ไม่ขึ้นต่อกันแบบขนาน
-- ตัวเลขหลัก ๆ ต้องเช็กกับประโยคต้นทางด้วยตัวเอง
-- ถ้าแหล่งข้อมูลให้ตัวเลขไม่ตรงกัน ให้ถามผู้ใช้ว่าจะใช้ตัวไหน
+## 1. Research
+Follow [references/research.md](references/research.md).
+- Delegate facts, numbers, verbatim copy, and brand assets to read-only agents, and run independent searches in parallel.
+- Check the headline numbers against the original sentence yourself.
+- If sources disagree on a number, ask the user which one to use.
 
-## 2. ขออนุมัติแผน
-แสดงสิ่งต่อไปนี้ แล้วรอให้อนุมัติก่อนสร้างโฟลเดอร์งาน:
-- สรุปผลการค้นข้อมูลพร้อมลิงก์แหล่งที่มา
-- แนวภาพและรูปแบบเรื่อง และไทม์ไลน์ฉากตามแพตเทิร์นและจังหวะเวลาในคู่มือของทั้งสองอย่าง
-- ชุดสี (ค่า hex และที่มาของแต่ละสี) และฟอนต์
-- แผนเสียงถ้าแนวภาพหรือรูปแบบเรื่องมีเสียง: เทมโป ท่อนต่าง ๆ และคิวเสียง
-- ตัวเลขที่ใช้และตัวเลขที่ตัดทิ้ง รายการไฟล์ (URL โลโก้ ฟอนต์ ตัวละคร คลิป ลิขสิทธิ์เพลง) ตำแหน่งโฟลเดอร์งาน
+## 2. Plan approval
+Show the following and get approval before you create the work folder:
+- research summary with source links
+- look and format, and the scene timeline using the patterns and timing in their guides
+- palette (hex values and where each came from) and fonts
+- sound plan when the look or format has sound: tempo, sections, and cues
+- numbers used and numbers dropped, asset list (logo URL, fonts, characters, clips, song licence), work folder location
 
-ถ้าผู้ใช้เปลี่ยนฉากหรือจุดเน้น ให้สรุปลำดับเรื่องที่แก้แล้วหนึ่งรอบ แล้วทำต่อได้เลย
+If the user changes scenes or emphasis, restate the revised flow once, then proceed.
 
-## 3. สร้าง
+## 3. Build
 ```bash
 cp -R <skill>/template <work-folder>/<name>-video && cd <work-folder>/<name>-video
 chmod -R u+w .   # the installed skill may be read-only, and cp keeps its modes
@@ -106,30 +106,30 @@ bash <skill>/scripts/fetch_fonts.sh assets/fonts
 curl -fsSL -o assets/logo_src.png '<official logo URL>'
 uv run --with pillow python <skill>/scripts/clean_logo.py assets/logo_src.png assets/logo.png
 ```
-- `index.html`: ตั้งขนาด fps และความยาวใน `window.VIDEO` ประกาศ `@font-face` เฉพาะฟอนต์ที่ใช้จริง และโหลด `sand.js` สำหรับแนวภาพทราย หรือโหลดโมดูลแนวภาพหนึ่งตัวสำหรับแนวภาพ 4–8 (ฟอนต์ของมันโหลดผ่าน `useFonts(LOOK.fonts)`)
-- ถ้าใช้โมดูลแนวภาพ ให้สร้างฉากจาก API ฉากและฉากประจำรูปแบบเรื่อง ([references/looks.md](references/looks.md)) แล้วตั้งสีแบรนด์ที่ `LOOK.colors`
-- `main.js`: THEME ฟังก์ชันฉาก และ `boot()` ดู API ได้ใน [references/kit-api.md](references/kit-api.md)
-- ใช้ไฟล์โลโก้และเวิร์ดมาร์กของจริง
-- วาดมาสคอตจากโลโก้เป็นสไปรต์ `drawPixels` (หรือเป็นเงาในแนวภาพทราย)
-- ลงทะเบียนตัวละครจิ๋วใน `MINIS` แล้ววาดด้วย `drawMini` ถ้าหัวข้อเกี่ยวกับ AI ให้โหลด `minis-ai.js` แล้ววาดเฉพาะตัวที่ยังไม่มี
-- ส่งภาพนิ่งรวมตัวละครให้ผู้ใช้ดูหนึ่งภาพตั้งแต่เนิ่น ๆ แล้วให้ยืนยัน
-- เก็บข้อความและตัวเลขเป็นค่าคงที่ไว้บนสุดของ `main.js` ถ้ามีตัวเลขที่ยังรอผู้ใช้ตัดสินใจ ให้แยกทางด้วย URL parameter ตัวเดียว จะได้เรนเดอร์ได้ทั้งสองเวอร์ชัน
-- เสียง: เขียน `audio.json` ให้เวลาฉากตรงกับ `main.js` แล้วรัน `uv run --with numpy --with scipy python <skill>/scripts/audio.py audio.json audio.wav` สำหรับรูปแบบตัดตามจังหวะ ให้รัน `beats.py` กับเพลงก่อน แล้วตัดตามตารางจังหวะนั้น
+- `index.html`: set size, fps, and length in `window.VIDEO`, declare only the fonts you use with `@font-face`, and load `sand.js` for the sand look or one look module for looks 4–8 (its fonts load through `useFonts(LOOK.fonts)`).
+- With a look module, build scenes from the scene API and the format's signature scene ([references/looks.md](references/looks.md)); set brand colours on `LOOK.colors`.
+- `main.js`: THEME, scene functions, and `boot()`. The API is in [references/kit-api.md](references/kit-api.md).
+- Use the real logo and wordmark files.
+- Draw the logo mascot as a `drawPixels` sprite (or as a silhouette in the sand look).
+- Register minis in `MINIS` and draw them with `drawMini`. For AI-related topics, load `minis-ai.js` and draw only the missing characters.
+- Show the user one still of the character lineup early and get it confirmed.
+- Keep copy and numbers as constants at the top of `main.js`. If a number still waits on the user's decision, branch on one URL parameter so both versions can be rendered.
+- Sound: write `audio.json` with the same scene times as `main.js`, then `uv run --with numpy --with scipy python <skill>/scripts/audio.py audio.json audio.wav`. For the beat format, run `beats.py` on the song first and cut on its grid.
 
-## 4. ตรวจคุณภาพ
-ทำตาม [references/qa-checklist.md](references/qa-checklist.md)
-1. เรนเดอร์ภาพนิ่งด้วย `node render.mjs stills <mid-scene times and times just before and after each transition>`
-2. ทำแผ่นรวมภาพสำหรับตรวจด้วย `uv run --with pillow python <skill>/scripts/contact_sheet.py stills <temp-folder>` แล้วเปิดดู
-3. แก้สิ่งที่เจอ
-4. เรนเดอร์ฉบับร่างด้วย `CRF=25 node render.mjs video draft.mp4` ดึงเฟรมช่วงทรานซิชันและเฟรมทุก ๆ 2 วิ แล้วเช็กขนาดไฟล์ ถ้ามีเสียง ให้เช็กสตรีมเสียง ความดัง และจังหวะคิวเสียงด้วย
+## 4. QA
+Follow [references/qa-checklist.md](references/qa-checklist.md).
+1. Render stills with `node render.mjs stills <mid-scene times and times just before and after each transition>`.
+2. Build review sheets with `uv run --with pillow python <skill>/scripts/contact_sheet.py stills <temp-folder>` and look at them.
+3. Fix what you find.
+4. Render a draft with `CRF=25 node render.mjs video draft.mp4`, extract the transition frames and one frame every 2 s, and check the file size. With sound, check the audio stream, loudness, and cue timing.
 
-## 5. เรนเดอร์ตัวจริงและส่งงาน
-- เรนเดอร์ไฟล์จริงด้วย `CRF=25 node render.mjs video <Name>_intro.mp4` ถ้าไฟล์ใหญ่เกินเป้า ให้เพิ่ม CRF เป็น 27 หรือลด `boot({ noise })`
-- ลบไฟล์ระหว่างทาง เช่น `stills/` ฉบับร่าง และล็อก
-- ส่ง MP4 ด้วย `SendUserFile` (display `render`) แล้วรายงาน:
-  - สเปก: แนวภาพ รูปแบบเรื่อง ความยาว ความละเอียด fps ขนาดไฟล์ เสียง
-  - แหล่งต้นฉบับของแนวภาพหรือรูปแบบเรื่องที่มีเครดิต พร้อมลิงก์
-  - รายการฉาก
-  - ข้อเท็จจริงที่ใช้ พร้อมลิงก์แหล่งที่มา
-  - ตัวเลขที่ตัดทิ้งและเหตุผล และรายการที่ต้องยืนยัน
-  - คำสั่งเรนเดอร์ใหม่ โดยบอกว่าต้องรันในโฟลเดอร์งาน
+## 5. Final render and delivery
+- Render the final file with `CRF=25 node render.mjs video <Name>_intro.mp4`. If it exceeds the size target, raise CRF to 27 or lower `boot({ noise })`.
+- Delete intermediate files such as `stills/`, the draft, and logs.
+- Send the MP4 with `SendUserFile` (display `render`) and report:
+  - spec: look, format, length, resolution, fps, file size, sound
+  - the original source of a credited look or format, with its link
+  - scene list
+  - facts used, with source links
+  - numbers dropped and why, and items that need confirmation
+  - the re-render command, noting that it must run inside the work folder
