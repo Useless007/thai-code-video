@@ -1,5 +1,6 @@
 // node render.mjs video [out.mp4]      -> full MP4 (H.264 at window.VIDEO size and fps; muxes audio.wav when present)
 // node render.mjs stills 1.2 3.4 ...   -> stills/t<sec>.png for review
+// QS=safe=1 node render.mjs stills ...   -> loads index.html?safe=1 (any query string)
 import { chromium } from 'playwright-core';
 import http from 'node:http';
 import fs from 'node:fs';
@@ -23,8 +24,9 @@ async function openPage() {
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
   page.on('pageerror', e => { console.error('pageerror:', e); process.exit(1); });
   page.on('console', m => m.type() === 'error' && !m.text().includes('404') && console.error('console:', m.text()));
-  await page.goto(`http://127.0.0.1:${server.address().port}/index.html`);
+  await page.goto(`http://127.0.0.1:${server.address().port}/index.html${process.env.QS ? `?${process.env.QS}` : ''}`);
   await page.waitForFunction('window.READY === true', null, { timeout: 30000 });
+  await page.setViewportSize({ width: await page.evaluate('W'), height: await page.evaluate('H') }); // portrait videos preview at their own size
   return page;
 }
 const grab = (page, f) => page.evaluate(async f => { await renderFrame(f); return document.getElementById('c').toDataURL('image/png').slice(22); }, f).then(b => Buffer.from(b, 'base64'));

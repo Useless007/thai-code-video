@@ -78,6 +78,7 @@ boot({
 
 ## Sound
 - `uv run --with numpy --with scipy python <skill>/scripts/audio.py audio.json audio.wav`: synthesized music (pad, bass, arpeggio, drums by section energy) and effects (`whoosh`, `pop`, `click`, `chime`, `ping`, `thud`, `sand`, `wave`, `type`) at cue times. The schema is in the script's docstring. With `"song"` set, a licensed track replaces the synthesized music.
+- 8-bit scoring (opt-in): `"arr": "chip"` swaps the arrangement for NES voices (Pulse 1 arpeggio, triangle bass, noise drums; Pulse 2 left to motifs), `"end"` forces the last bar's chord, `"motifs"` + `motif:<id>` cues play leitmotifs (`voice`, `lp`, `transpose`). Cues may be objects `{t, name, gain, …}`. Chip effects: `stinger` (`variant` 1–3), `blip` (`midi`, `duty`), `bark`, `knock`, `whistle`. Specs without these keys render exactly as before.
 - `uv run --with librosa python <skill>/scripts/beats.py song.mp3 [offset] > beats.json`: BPM, beats, downbeats, and the drop, for cutting on the beat.
 
 ## Character faces (Thai fork addition)
